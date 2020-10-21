@@ -14,6 +14,25 @@ module RedmineCAS
 
     module InstanceMethods
       def require_login_with_cas
+
+        logger.error "================================================================================================="
+        logger.error User.current
+        logger.error RedmineCAS.setting(:public_paths)
+        logger.error request.original_url
+        logger.error "================================================================================================="
+
+        urls_config = RedmineCAS.setting(:public_paths)
+        current_url = request.original_url
+
+        unless urls_config.nil?
+          urls = urls_config.split(",")
+          for url in urls
+            if url.eql? current_url
+              return false
+            end
+          end
+        end
+
         return require_login_without_cas unless RedmineCAS.enabled?
         if !User.current.logged?
           referrer = request.fullpath;
