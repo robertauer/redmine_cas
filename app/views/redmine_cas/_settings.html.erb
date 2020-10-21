@@ -14,6 +14,11 @@
 </p>
 <p>
   <%= label_tag "settings[autocreate_users]", l(:redmine_cas_settings_autocreate_users_label) %>
-  <%= check_box_tag "settings[autocreate_users]", 1, @settings[:autocreate_users] %>
+  <%= check_box_tag "settings[autocreate_users]", 1, @settings[:autocreate_users] %>rm -rf
   <em class="info"><%= l(:redmine_cas_settings_autocreate_users_helptext).html_safe %></em>
+</p>
+<p>
+  <%= label_tag "settings[public_paths]", l(:redmine_cas_settings_public_paths_label) %>
+  <%= text_field_tag "settings[public_paths]", @settings[:public_paths], :size => 50 %>
+  <em class="info"><%= l(:redmine_cas_settings_public_paths_helptext).html_safe %></em>
 </p>
