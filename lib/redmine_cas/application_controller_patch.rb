@@ -9,10 +9,23 @@ module RedmineCAS
         alias_method :verify_authenticity_token, :verify_authenticity_token_with_cas
         alias_method :require_login_without_cas, :require_login
         alias_method :require_login, :require_login_with_cas
+        alias_method :check_if_login_required_original, :check_if_login_required
+        alias_method :check_if_login_required, :check_if_login_required_new
       end
     end
 
     module InstanceMethods
+
+      def check_if_login_required_new
+        required = check_if_login_required_original
+        logger.error "================================================================================================="
+        logger.error "teeeeeest"
+        logger.error "================================================================================================="
+        current_url = request.original_url
+
+        return required
+      end
+
       def require_login_with_cas
 
         logger.error "================================================================================================="

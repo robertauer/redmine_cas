@@ -7,10 +7,22 @@ module RedmineCAS
       base.class_eval do
         alias_method :logout_without_cas, :logout
         alias_method :logout, :logout_with_cas
+        alias_method :old_login, :login
+        alias_method :login, :new_login
       end
     end
 
     module InstanceMethods
+      def new_login
+        back_url = signin_url(:autologin => params[:autologin])
+        logger.error "================================================================================================="
+        logger.error back_url
+        logger.error request.original_url
+        logger.error request.referrer
+        logger.error request.headers["HTTP_REFERER"]
+        logger.error "================================================================================================="
+      end
+
       def logout_with_cas
         return logout_without_cas unless RedmineCAS.enabled?
         logout_user
