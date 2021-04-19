@@ -121,7 +121,7 @@ module RedmineCAS
             else
               # Only revoke admin permissions if they were set via cas
               # We currently save the value for the casAdmin Field as `true` or `false`. However, redmine saves them as `1` and `0`. We need to support both.
-              wasCreatedByCAS = user.custom_field_value(casAdminPermissionsCustomField).to_s == 'true' || user.custom_field_value(casAdminPermissionsCustomField).to_s == '1'
+              wasCreatedByCAS = user.custom_field_value(casAdminPermissionsCustomField).is_true?
               if wasCreatedByCAS
                 user.update_attribute(:admin, 0)
               end
