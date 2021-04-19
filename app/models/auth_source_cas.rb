@@ -127,6 +127,7 @@ class AuthSourceCas < AuthSource
             end
             # remove user's admin rights if he is not in admin group any more
             casAdminPermissionsCustomField = UserCustomField.find_by_name('casAdmin')
+            # We currently save the value for the casAdmin Field as `true` or `false`. However, redmine saves them as `1` and `0`. We need to support both.
             wasCreatedByCAS = user.custom_field_value(casAdminPermissionsCustomField).to_s == 'true' || user.custom_field_value(casAdminPermissionsCustomField).to_s == '1'
             if admingroup_exists and wasCreatedByCAS
               if user_groups.to_s.include?(Ces_admin_group.gsub('\n', ''))
