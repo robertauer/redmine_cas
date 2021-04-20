@@ -173,7 +173,7 @@ class AuthSourceCas < AuthSource
   end
 
   def auth_method_name
-    'CustomMightyCAS'
+    'CAS'
   end
 
   def create_group_with_user(group, user)
