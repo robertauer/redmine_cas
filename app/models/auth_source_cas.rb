@@ -14,6 +14,12 @@ class String
   end
 end
 
+class NilClass
+  def is_true?()
+    true
+  end
+end
+
 class AuthSourceCas < AuthSource
   NETWORK_EXCEPTIONS = [
     Errno::ECONNABORTED, Errno::ECONNREFUSED, Errno::ECONNRESET,
