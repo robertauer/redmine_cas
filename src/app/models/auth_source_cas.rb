@@ -69,6 +69,18 @@ class AuthSourceCas < AuthSource
   def authenticate(login, password)
     return nil if login.blank? || password.blank?
 
+    user = User.find_by_login(login)
+    if user.api_key === password
+      retVal =
+        {
+          :firstname => user.firstname,
+          :lastname => user.lastname,
+          :mail => user.mail,
+          :auth_source_id => user.auth_source_id
+        }
+      return retVal
+    end
+
     # request a ticket granting ticket
     tgt_uri = 'https://'+FQDN+'/cas/v1/tickets'
     tgt_form_data = {'username' => login, 'password' => password}
