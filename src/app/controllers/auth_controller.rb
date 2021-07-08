@@ -1,7 +1,7 @@
 require 'net/http'
 require 'net/https'
 
-FQDN = "192.168.56.2"
+FQDN = ENV['FQDN']
 
 module Api
   module Cas
