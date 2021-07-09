@@ -28,7 +28,7 @@ module Api
 
       def validate(ticket)
         params = { :ticket => ticket, :service => "https://#{FQDN}/redmine/api/cas/auth" }
-        uri = "https://#{FQDN}/cas/proxyValidate"
+        uri = "https://#{FQDN}/cas/p3/proxyValidate"
 
         http_uri = URI.parse(uri)
         http_uri.query = URI.encode_www_form(params)
