@@ -1,5 +1,5 @@
 #!/bin/bash
-DOGU="redmine"
+DOGU="${1}"
 
 rm -rf ./redmine_cas
 ../bundle/bundle_plugin.rb
