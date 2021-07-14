@@ -18,30 +18,31 @@ module RedmineCAS
     end
 
     module InstanceMethods
-
       def cas_find_current_user
         if /\AProxyTicket /i.match?(request.authorization.to_s)
-          ticket = request.authorization.to_s.split(" ", 2)[1]
+          begin
+            ticket = request.authorization.to_s.split(" ", 2)[1]
+            service = "https://#{FQDN}/redmine"
+            pt = CASClient::ServiceTicket.new(ticket, service)
+            validationResponse = CASClient::Frameworks::Rails::Filter.client.validate_proxy_ticket(pt)
+            if validationResponse.success
+              login = validationResponse.user
+              user = User.find_by_login(login)
 
-          service="https://#{FQDN}/redmine/api/cas/auth"
-          pt = CASClient::ServiceTicket.new(ticket, service)
-          validationResponse = CASClient::Frameworks::Rails::Filter.client.validate_proxy_ticket(pt)
+              if user == nil
+                userAttributes = validationResponse.extra_attributes
+                user_mail = userAttributes["mail"]
+                user_surname = userAttributes["surname"]
+                user_givenName = userAttributes["givenName"]
+                user_groups = userAttributes["groups"]
+                cas_auth_source = AuthSource.find_by(:name => 'Cas')
+                user = AuthSourceCas.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, cas_auth_source.id)
+              end
 
-          if validationResponse.success
-            login = validationResponse.user
-            user = User.find_by_login(login)
-
-            if user == nil
-              userAttributes = validationResponse.extra_attributes
-              user_mail = userAttributes["mail"]
-              user_surname = userAttributes["surname"]
-              user_givenName = userAttributes["givenName"]
-              user_groups = userAttributes["groups"]
-              cas_auth_source = AuthSource.find_by(:name => 'Cas')
-              user = AuthSourceCas.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, cas_auth_source.id)
+              return user
             end
-
-            return user
+          rescue
+            puts "invalid proxy ticket provided"
           end
         end
 
