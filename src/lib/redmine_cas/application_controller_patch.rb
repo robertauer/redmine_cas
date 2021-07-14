@@ -22,19 +22,21 @@ module RedmineCAS
       def cas_find_current_user
         if /\AProxyTicket /i.match?(request.authorization.to_s)
           ticket = request.authorization.to_s.split(" ", 2)[1]
-          response = validate(ticket)
 
-          if (Nokogiri::XML(response.body).xpath('//cas:serviceResponse').to_s).include? 'Success'
-            userAttributes = Nokogiri::XML(response.body)
-            login = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:cn').content.to_s
+          service="https://#{FQDN}/redmine/api/cas/auth"
+          pt = CASClient::ServiceTicket.new(ticket, service)
+          validationResponse = CASClient::Frameworks::Rails::Filter.client.validate_proxy_ticket(pt)
+
+          if validationResponse.success
+            login = validationResponse.user
             user = User.find_by_login(login)
 
             if user == nil
-              userAttributes = Nokogiri::XML(response.body)
-              user_mail = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:mail').content.to_s
-              user_surname = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:surname').content.to_s
-              user_givenName = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:givenName').content.to_s
-              user_groups = userAttributes.xpath('//cas:authenticationSuccess//cas:attributes//cas:groups')
+              userAttributes = validationResponse.extra_attributes
+              user_mail = userAttributes["mail"]
+              user_surname = userAttributes["surname"]
+              user_givenName = userAttributes["givenName"]
+              user_groups = userAttributes["groups"]
               cas_auth_source = AuthSource.find_by(:name => 'Cas')
               user = AuthSourceCas.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, cas_auth_source.id)
             end
@@ -44,20 +46,6 @@ module RedmineCAS
         end
 
         return original_find_current_user
-      end
-
-      def validate(ticket)
-        params = { :ticket => ticket, :service => "https://#{FQDN}/redmine/api/cas/auth" }
-        uri = "https://#{FQDN}/cas/p3/proxyValidate"
-
-        http_uri = URI.parse(uri)
-        http_uri.query = URI.encode_www_form(params)
-
-        http = Net::HTTP.new(http_uri.host, http_uri.port)
-        http.use_ssl = true
-        http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-        request = Net::HTTP::Get.new("#{http_uri.path}?#{http_uri.query}")
-        http.request(request)
       end
 
       def require_login_with_cas
