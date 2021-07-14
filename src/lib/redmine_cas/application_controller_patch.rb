@@ -42,7 +42,7 @@ module RedmineCAS
               return user
             end
           rescue
-            puts "invalid proxy ticket provided"
+            puts "error while validating proxy ticket"
           end
         end
 
