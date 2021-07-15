@@ -165,7 +165,11 @@ class AuthSourceCas < AuthSource
           user_mail = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:mail').content.to_s
           user_surname = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:surname').content.to_s
           user_givenName = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:givenName').content.to_s
-          user_groups = userAttributes.xpath('//cas:authenticationSuccess//cas:attributes//cas:groups').content
+          user_groups = []
+          user_groups_xml = userAttributes.xpath('//cas:authenticationSuccess//cas:attributes//cas:groups')
+          for i in user_groups_xml
+            user_groups.push(i.content.to_s)
+          end
 
           create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, self.id)
 
