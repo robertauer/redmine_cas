@@ -27,22 +27,21 @@ module RedmineCAS
             validationResponse = CASClient::Frameworks::Rails::Filter.client.validate_proxy_ticket(pt)
             if validationResponse.success
               login = validationResponse.user
-              user = User.find_by_login(login)
 
-              if user == nil
-                userAttributes = validationResponse.extra_attributes
-                user_mail = userAttributes["mail"]
-                user_surname = userAttributes["surname"]
-                user_givenName = userAttributes["givenName"]
-                user_groups = userAttributes["groups"]
-                cas_auth_source = AuthSource.find_by(:name => 'Cas')
-                user = AuthSourceCas.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, cas_auth_source.id)
-              end
+              userAttributes = validationResponse.extra_attributes
+              user_mail = userAttributes["mail"]
+              user_surname = userAttributes["surname"]
+              user_givenName = userAttributes["givenName"]
+              user_groups = userAttributes["allgroups"]
+
+              cas_auth_source = AuthSource.find_by(:name => 'Cas')
+              user = cas_auth_source.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, cas_auth_source.id)
 
               return user
             end
-          rescue
+          rescue => e
             puts "error while validating proxy ticket"
+            puts e.to_s
           end
         end
 

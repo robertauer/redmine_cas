@@ -31,7 +31,7 @@ class AuthSourceCas < AuthSource
   FQDN = ENV['FQDN']
   Ces_admin_group = ENV['ADMIN_GROUP']
 
-  def self.add_user_to_group(groupname, user)
+  def add_user_to_group(groupname, user)
     begin
       logger.info "add_user_to_group: " + groupname + ", " + user.to_s
       @group = Group.find_by(lastname: groupname)
@@ -66,7 +66,7 @@ class AuthSourceCas < AuthSource
     return http.request(request)
   end
 
-  def self.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, auth_source_id)
+  def create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, auth_source_id)
     # Get ces admin group
     admingroup_exists = false
     if Ces_admin_group != ''
@@ -90,7 +90,7 @@ class AuthSourceCas < AuthSource
 
       for i in user_groups
         # create group / add user to group
-        AuthSourceCas.add_user_to_group(i.content.to_s, user)
+        add_user_to_group(i.to_s, user)
       end
 
       if !user.save
@@ -100,10 +100,11 @@ class AuthSourceCas < AuthSource
       # user already in redmine
       @usergroups = Array.new
       for i in user_groups
-        @usergroups << i.content.to_s
+        @usergroups << i.to_s
         # create group / add user to group
-        add_user_to_group(i.content.to_s, user)
+        add_user_to_group(i.to_s, user)
       end
+
       # remove user from groups he is not in any more
       @casgroups = Group.where(firstname: 'cas')
       for l in @casgroups
@@ -115,6 +116,7 @@ class AuthSourceCas < AuthSource
           end
         end
       end
+
       # remove user's admin rights if he is not in admin group any more
       casAdminPermissionsCustomField = UserCustomField.find_by_name('casAdmin')
       # We currently save the value for the casAdmin Field as `true` or `false`. However, redmine saves them as `1` and `0`. We need to support both.
@@ -175,9 +177,9 @@ class AuthSourceCas < AuthSource
           user_mail = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:mail').content.to_s
           user_surname = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:surname').content.to_s
           user_givenName = userAttributes.at_xpath('//cas:authenticationSuccess//cas:attributes//cas:givenName').content.to_s
-          user_groups = userAttributes.xpath('//cas:authenticationSuccess//cas:attributes//cas:groups')
+          user_groups = userAttributes.xpath('//cas:authenticationSuccess//cas:attributes//cas:groups').content
 
-          AuthSourceCas.create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, self.id)
+          create_or_update_user(login, user_givenName, user_surname, user_mail, user_groups, self.id)
 
           # return new user information
           retVal =
